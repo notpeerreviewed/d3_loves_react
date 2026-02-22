@@ -1,5 +1,24 @@
 <!doctype html>
 <html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>D3 Bar Plot</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      .bar {
+        fill: steelblue;
+      }
+      .bar:hover {
+        fill: orange;
+      }
+      .axis-label {
+        font-size: 12px;
+      }
+    </style>
+  </head>
   <title>About Me</title>
   <body>
     <h1>Hi my name is Jeff Lean</h1>
@@ -52,5 +71,81 @@
       width="300"
       height="200"
     />
+
+    <h3>My AI-created bar plot</h3>
+
+    <svg width="600" height="400"></svg>
+
+    <script>
+      const data = [
+        { name: "A", value: 1 },
+        { name: "B", value: 5 },
+        { name: "C", value: 8 },
+        { name: "D", value: 10 },
+      ];
+
+      const svg = d3.select("svg");
+      const width = +svg.attr("width");
+      const height = +svg.attr("height");
+
+      // Margins create padding so axes and labels don’t get cut off
+      const margin = {
+        top: 20, // Space at top
+        right: 30, // Space on right
+        bottom: 40, // Space at bottom (for x-axis labels)
+        left: 40, // Space on left (for y-axis labels)
+      };
+      // Compute the actual drawable width inside margins
+      const innerWidth = width - margin.left - margin.right;
+
+      // Compute the actual drawable height inside margins
+      const innerHeight = height - margin.top - margin.bottom;
+
+      // Append a <g> (group) element inside SVG
+      // This allows us to shift the entire chart by the margin amount
+      const g = svg
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+      // X scale (categorical)
+      const x = d3
+        .scaleBand() // scaleBand is used for categorical data
+        .domain(data.map((d) => d.name)) // Extracts ["A","B","C","D"]
+        .range([0, innerWidth]) // Maps categories across the horizontal width
+        .padding(0.2); // Adds spacing between bars
+
+      // Y scale (linear)
+      const y = d3
+        .scaleLinear() // scaleLinear is used for numeric data
+        .domain([0, d3.max(data, (d) => d.value)]) // Sets input range from 0 to max value
+        .nice() // Rounds domain to nice round numbers
+        .range([innerHeight, 0]);
+
+      // Draw bars
+      g.selectAll(".bar")
+        .data(data)
+        .enter()
+        .append("rect")
+        .attr("class", "bar")
+        .attr("x", (d) => x(d.name))
+        .attr("y", (d) => y(d.value))
+        .attr("width", x.bandwidth())
+        .attr("height", (d) => innerHeight - y(d.value));
+
+      // Add X axis at the bottom of chart
+      g.append("g")
+
+        // Move axis group to bottom of drawing area
+        .attr("transform", `translate(0,${innerHeight})`)
+
+        // Generate bottom axis using x scale
+        .call(d3.axisBottom(x));
+
+      // Add Y axis on the left
+      g.append("g")
+
+        // Generate left axis using y scale
+        .call(d3.axisLeft(y));
+    </script>
   </body>
 </html>
